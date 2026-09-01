@@ -151,14 +151,16 @@ fun PrimaryMetricsSection(
             } else {
                 "0.0"
             }
-            val varianceLabel = if (useSampleVariance) "VARIANCE (s²)" else "VARIANCE (σ²)"
+            // The symbol lives in the mode badge so the header stays on one line in a half-width card.
+            val varianceBadge = if (useSampleVariance) "s² ⟲" else "σ² ⟲"
+            val varianceSubtitle = if (useSampleVariance) "التباين (عينة)" else "التباين (مجتمع)"
 
             GeometricMetricCard(
-                categoryLabel = varianceLabel,
-                arabicTitle = "التباين الإحصائي",
+                categoryLabel = "VARIANCE",
+                arabicTitle = varianceSubtitle,
                 value = varianceFormatted,
                 highlight = false,
-                badgeText = "Mode ⟲",
+                badgeText = varianceBadge,
                 onCardClick = onToggleVarianceMode,
                 modifier = Modifier
                     .weight(1f)
@@ -314,10 +316,14 @@ fun GeometricMetricCard(
                     letterSpacing = 1.2.sp,
                     color = GeoPurpleAccent,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    // The label absorbs the leftover width so the badge keeps its natural size
+                    // instead of being squeezed into a vertical stack of letters.
+                    modifier = Modifier.weight(1f, fill = false)
                 )
 
                 if (badgeText != null) {
+                    Spacer(modifier = Modifier.width(6.dp))
                     Surface(
                         shape = CircleShape,
                         color = GeoPurpleAccent.copy(alpha = 0.15f)
@@ -327,7 +333,9 @@ fun GeometricMetricCard(
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = GeoPurpleAccent,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            maxLines = 1,
+                            softWrap = false,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                         )
                     }
                 }
@@ -346,7 +354,9 @@ fun GeometricMetricCard(
             Text(
                 text = arabicTitle,
                 fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }

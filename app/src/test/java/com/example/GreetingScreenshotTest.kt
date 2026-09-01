@@ -1,7 +1,9 @@
 package com.example
 
+import android.app.Application
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
+import androidx.test.core.app.ApplicationProvider
 import com.example.ui.TextAnalyzerScreen
 import com.example.ui.theme.MyApplicationTheme
 import com.example.viewmodel.TextAnalyzerViewModel
@@ -23,7 +25,8 @@ class GreetingScreenshotTest {
 
   @Test
   fun greeting_screenshot() {
-    val viewModel = TextAnalyzerViewModel()
+    val application = ApplicationProvider.getApplicationContext<Application>()
+    val viewModel = TextAnalyzerViewModel(application)
     composeTestRule.setContent {
       MyApplicationTheme {
         TextAnalyzerScreen(viewModel = viewModel)
