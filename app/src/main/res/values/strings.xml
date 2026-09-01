@@ -1,0 +1,39 @@
+<resources>
+    <string name="app_name">Text Analyzer</string>
+    <string name="app_title">English Text Analyzer</string>
+    <string name="app_subtitle">Sentence &amp; Word Variance Calculator</string>
+    <string name="app_name_ar">محلل النصوص الإنجليزية</string>
+    
+    <!-- Input Section -->
+    <string name="input_label">Enter English Text</string>
+    <string name="input_placeholder">Type or paste your English sentences here (e.g. The quick brown fox jumps over the lazy dog. It is a sunny day.)</string>
+    <string name="analyze_button">Analyze Text</string>
+    <string name="clear_button">Clear</string>
+    <string name="paste_button">Paste</string>
+    <string name="sample_button">Try Sample</string>
+    
+    <!-- Metrics -->
+    <string name="metric_sentences_title">Number of sentences</string>
+    <string name="metric_sentences_ar">عدد الجمل</string>
+    <string name="metric_total_words_title">Total words</string>
+    <string name="metric_total_words_ar">مجموع الكلمات</string>
+    <string name="metric_variance_title">Variance</string>
+    <string name="metric_variance_ar">التباين</string>
+    <string name="metric_mean_words_title">Average words / sentence</string>
+    <string name="metric_mean_words_ar">متوسط الكلمات لكل جملة</string>
+    <string name="metric_std_dev_title">Standard Deviation</string>
+    <string name="metric_std_dev_ar">الانحراف المعياري</string>
+    
+    <!-- Breakdown Section -->
+    <string name="breakdown_title">Sentences &amp; Word Count Breakdown</string>
+    <string name="breakdown_subtitle">Number of words per sentence</string>
+    <string name="breakdown_subtitle_ar">عدد الكلمات في كل جملة</string>
+    <string name="variance_steps_title">Step-by-Step Variance Calculation</string>
+    <string name="variance_formula">Formula: σ² = Σ(wᵢ - μ)² / N</string>
+    
+    <!-- Actions & Feedback -->
+    <string name="copy_report">Copy Report</string>
+    <string name="share_report">Share Report</string>
+    <string name="report_copied">Report copied to clipboard</string>
+    <string name="no_text_warning">Please enter text to analyze</string>
+</resources>

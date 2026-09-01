@@ -1,0 +1,6 @@
+{
+  "name": "Text Analyzer",
+  "description": "English text analyzer calculating sentence counts, words per sentence, variance, and total words.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
