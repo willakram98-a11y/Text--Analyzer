@@ -1,16 +1,35 @@
 package com.example.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.analyzer.TextAnalyzer
+import com.example.data.local.AppDatabase
+import com.example.data.local.entity.AnalysisHistoryEntity
+import com.example.data.repository.AnalysisHistoryRepository
 import com.example.model.AnalysisResult
 import com.example.model.SampleText
 import com.example.model.SentenceInfo
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.util.Locale
 
-class TextAnalyzerViewModel : ViewModel() {
+class TextAnalyzerViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val repository: AnalysisHistoryRepository = AnalysisHistoryRepository(
+        AppDatabase.getDatabase(application).analysisHistoryDao()
+    )
+
+    val historyList: StateFlow<List<AnalysisHistoryEntity>> = repository.allHistory
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     private val _inputText = MutableStateFlow("")
     val inputText: StateFlow<String> = _inputText.asStateFlow()
@@ -31,11 +50,20 @@ class TextAnalyzerViewModel : ViewModel() {
     private val _showSamplePicker = MutableStateFlow(false)
     val showSamplePicker: StateFlow<Boolean> = _showSamplePicker.asStateFlow()
 
+    private val _showHistorySheet = MutableStateFlow(false)
+    val showHistorySheet: StateFlow<Boolean> = _showHistorySheet.asStateFlow()
+
     init {
         // Initialize with default sample text so user immediately sees how it works!
         val defaultSample = "Kotlin is a modern and concise programming language. Jetpack Compose simplifies building native Android user interfaces. Developers create elegant mobile applications faster with less boilerplate code."
         _inputText.value = defaultSample
-        _analysisResult.value = TextAnalyzer.analyze(defaultSample)
+        val result = TextAnalyzer.analyze(defaultSample)
+        _analysisResult.value = result
+
+        // Save initial default analysis to Room DB
+        viewModelScope.launch {
+            repository.saveAnalysis(defaultSample, result)
+        }
     }
 
     fun onTextChanged(text: String) {
@@ -50,7 +78,13 @@ class TextAnalyzerViewModel : ViewModel() {
     }
 
     fun analyzeNow() {
-        _analysisResult.value = TextAnalyzer.analyze(_inputText.value)
+        val result = TextAnalyzer.analyze(_inputText.value)
+        _analysisResult.value = result
+        if (result.isCalculated && result.totalSentences > 0) {
+            viewModelScope.launch {
+                repository.saveAnalysis(_inputText.value, result)
+            }
+        }
     }
 
     fun clearText() {
@@ -61,9 +95,35 @@ class TextAnalyzerViewModel : ViewModel() {
 
     fun loadSample(sample: SampleText) {
         _inputText.value = sample.text
-        _analysisResult.value = TextAnalyzer.analyze(sample.text)
+        val result = TextAnalyzer.analyze(sample.text)
+        _analysisResult.value = result
         _selectedSentence.value = null
         _showSamplePicker.value = false
+        if (result.isCalculated && result.totalSentences > 0) {
+            viewModelScope.launch {
+                repository.saveAnalysis(sample.text, result)
+            }
+        }
+    }
+
+    fun loadFromHistory(historyItem: AnalysisHistoryEntity) {
+        _inputText.value = historyItem.text
+        val result = TextAnalyzer.analyze(historyItem.text)
+        _analysisResult.value = result
+        _selectedSentence.value = null
+        _showHistorySheet.value = false
+    }
+
+    fun deleteHistoryItem(id: Long) {
+        viewModelScope.launch {
+            repository.deleteHistory(id)
+        }
+    }
+
+    fun clearAllHistory() {
+        viewModelScope.launch {
+            repository.clearHistory()
+        }
     }
 
     fun setSamplePickerVisible(visible: Boolean) {
@@ -72,6 +132,10 @@ class TextAnalyzerViewModel : ViewModel() {
 
     fun setStepByStepDialogVisible(visible: Boolean) {
         _showStepByStepDialog.value = visible
+    }
+
+    fun setHistorySheetVisible(visible: Boolean) {
+        _showHistorySheet.value = visible
     }
 
     fun toggleVarianceMode() {
@@ -110,3 +174,4 @@ class TextAnalyzerViewModel : ViewModel() {
         return sb.toString()
     }
 }
+

@@ -35,9 +35,12 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Functions
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Spellcheck
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -86,6 +89,7 @@ import com.example.R
 import com.example.data.SampleTexts
 import com.example.model.AnalysisResult
 import com.example.model.SentenceInfo
+import com.example.ui.components.HistoryBottomSheet
 import com.example.ui.components.PrimaryMetricsSection
 import com.example.ui.components.SampleTextsDialog
 import com.example.ui.components.SentencesBreakdownSection
@@ -111,6 +115,8 @@ fun TextAnalyzerScreen(
     val selectedSentence by viewModel.selectedSentence.collectAsStateWithLifecycle()
     val showStepByStepDialog by viewModel.showStepByStepDialog.collectAsStateWithLifecycle()
     val showSamplePicker by viewModel.showSamplePicker.collectAsStateWithLifecycle()
+    val showHistorySheet by viewModel.showHistorySheet.collectAsStateWithLifecycle()
+    val historyList by viewModel.historyList.collectAsStateWithLifecycle()
     var showMenu by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -132,6 +138,31 @@ fun TextAnalyzerScreen(
                     }
                 },
                 actions = {
+                    // History Icon with Badge
+                    IconButton(
+                        onClick = { viewModel.setHistorySheetVisible(true) },
+                        modifier = Modifier.testTag("history_button")
+                    ) {
+                        BadgedBox(
+                            badge = {
+                                if (historyList.isNotEmpty()) {
+                                    Badge(
+                                        containerColor = GeoPurpleAccent,
+                                        contentColor = Color.White
+                                    ) {
+                                        Text(text = if (historyList.size > 9) "9+" else "${historyList.size}")
+                                    }
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.History,
+                                contentDescription = "Analysis History",
+                                tint = GeoPurpleAccent
+                            )
+                        }
+                    }
+
                     IconButton(
                         onClick = { viewModel.setSamplePickerVisible(true) },
                         modifier = Modifier.testTag("sample_picker_button")
@@ -160,6 +191,17 @@ fun TextAnalyzerScreen(
                             onDismissRequest = { showMenu = false },
                             shape = RoundedCornerShape(16.dp)
                         ) {
+                            DropdownMenuItem(
+                                text = { Text("Analysis History (${historyList.size})") },
+                                leadingIcon = {
+                                    Icon(Icons.Default.History, contentDescription = null, tint = GeoPurpleAccent)
+                                },
+                                onClick = {
+                                    showMenu = false
+                                    viewModel.setHistorySheetVisible(true)
+                                }
+                            )
+
                             if (analysisResult.isCalculated && analysisResult.totalSentences > 0) {
                                 DropdownMenuItem(
                                     text = { Text("Copy Analysis Report") },
@@ -326,6 +368,16 @@ fun TextAnalyzerScreen(
         SampleTextsDialog(
             onSelectSample = viewModel::loadSample,
             onDismiss = { viewModel.setSamplePickerVisible(false) }
+        )
+    }
+
+    if (showHistorySheet) {
+        HistoryBottomSheet(
+            historyList = historyList,
+            onSelectHistoryItem = viewModel::loadFromHistory,
+            onDeleteHistoryItem = viewModel::deleteHistoryItem,
+            onClearAllHistory = viewModel::clearAllHistory,
+            onDismiss = { viewModel.setHistorySheetVisible(false) }
         )
     }
 }
